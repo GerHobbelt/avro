@@ -437,6 +437,7 @@ struct TestSchema {
         Name recordName("Test");
         HasName nameConcept(recordName);
         concepts::MultiAttribute<std::string> fieldNames;
+        std::vector<std::vector<std::string>> fieldAliases;
         concepts::MultiAttribute<NodePtr> fieldValues;
         std::vector<GenericDatum> defaultValues;
         concepts::MultiAttribute<CustomFields> customFields;
@@ -448,7 +449,7 @@ struct TestSchema {
         customFields.add(cf);
 
         NodeRecord nodeRecordWithCustomField(nameConcept, fieldValues,
-                                            fieldNames, defaultValues,
+                                            fieldNames, fieldAliases, defaultValues,
                                             customFields);
         std::string expectedJsonWithCustomField =
         "{\"type\": \"record\", \"name\": \"Test\",\"fields\": "
