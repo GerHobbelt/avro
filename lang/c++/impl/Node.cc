@@ -26,12 +26,20 @@ using std::string;
 
 Node::~Node() = default;
 
+Name::Name() = default;
+
 Name::Name(const std::string &name) {
     fullname(name);
 }
 
+Name::Name(std::string simpleName, std::string ns) : ns_(std::move(ns)), simpleName_(std::move(simpleName)) {
+    check();
+}
+
+Name::~Name() = default;
+
 string Name::fullname() const {
-    return (ns_.empty()) ? simpleName_ : ns_ + "." + simpleName_;
+    return ns_.empty() ? simpleName_ : ns_ + "." + simpleName_;
 }
 
 void Name::fullname(const string &name) {
@@ -44,6 +52,15 @@ void Name::fullname(const string &name) {
         simpleName_ = name.substr(n + 1);
     }
     check();
+}
+
+void Name::addAlias(const std::string &alias) {
+    aliases_.push_back(alias);
+    if (!ns_.empty() && alias.find_last_of('.') == string::npos) {
+        fqAliases_.emplace(ns_ + "." + alias);
+    } else {
+        fqAliases_.insert(alias);
+    }
 }
 
 bool Name::operator<(const Name &n) const {
@@ -70,6 +87,10 @@ void Name::check() const {
 
 bool Name::operator==(const Name &n) const {
     return ns_ == n.ns_ && simpleName_ == n.simpleName_;
+}
+
+bool Name::equalOrAliasedBy(const Name &n) const {
+    return *this == n || n.fqAliases_.find(fullname()) != n.fqAliases_.end();
 }
 
 void Node::setLogicalType(LogicalType logicalType) {

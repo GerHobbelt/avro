@@ -24,6 +24,7 @@
 #include <boost/noncopyable.hpp>
 #include <cassert>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "Exception.hh"
@@ -41,24 +42,30 @@ using NodePtr = std::shared_ptr<Node>;
 class AVRO_DECL Name {
     std::string ns_;
     std::string simpleName_;
+    std::vector<std::string> aliases_;
+    std::set<std::string> fqAliases_;
 
 public:
-    Name() = default;
-    explicit Name(const std::string &fullname);
-    Name(std::string simpleName, std::string ns) : ns_(std::move(ns)), simpleName_(std::move(simpleName)) { check(); }
+    Name();
+    explicit Name(const std::string &name);
+    Name(std::string simpleName, std::string ns);
+    ~Name();
 
     std::string fullname() const;
     const std::string &ns() const { return ns_; }
     const std::string &simpleName() const { return simpleName_; }
+    const std::vector<std::string> &aliases() const { return aliases_; }
 
     void ns(std::string n) { ns_ = std::move(n); }
     void simpleName(std::string n) { simpleName_ = std::move(n); }
     void fullname(const std::string &n);
+    void addAlias(const std::string &alias);
 
     bool operator<(const Name &n) const;
     void check() const;
     bool operator==(const Name &n) const;
     bool operator!=(const Name &n) const { return !((*this) == n); }
+    bool equalOrAliasedBy(const Name &n) const;
     void clear() {
         ns_.clear();
         simpleName_.clear();
