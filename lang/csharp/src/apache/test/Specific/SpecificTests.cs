@@ -270,6 +270,57 @@ namespace Avro.Test
             Assert.AreEqual(EnumType.DEFAULT, rec2.enumType);
         }
 
+        [Test]
+        public void TestDefaultForMissingField()
+        {
+            var testRecord = new EmptyEnumRecord();
+            var stream = serialize(testRecord.Schema, testRecord);
+            var deserializedRecord = deserialize<EnumRecord>(stream, testRecord.Schema, (new EnumRecord()).Schema);
+            Assert.AreEqual(EnumType.DEFAULT, deserializedRecord.enumType);
+        }
+
+        [Test]
+        public void TestFieldAlias()
+        {
+            var writerSchema = Schema.Parse(@"{
+               ""type"":""record"",
+               ""name"":""EnumRecord"",
+               ""namespace"":""Avro.Test"",
+               ""fields"":[
+                  {
+                     ""name"":""oldEnumType"",
+                     ""type"":{
+                        ""type"":""enum"",
+                        ""name"":""EnumType"",
+                        ""symbols"":[""DEFAULT"", ""FIRST"", ""SECOND"", ""THIRD""]
+                     }
+                  }
+               ]
+            }");
+            var readerSchema = Schema.Parse(@"{
+               ""type"":""record"",
+               ""name"":""EnumRecord"",
+               ""namespace"":""Avro.Test"",
+               ""fields"":[
+                  {
+                     ""name"":""enumType"",
+                     ""type"":{
+                        ""type"":""enum"",
+                        ""name"":""EnumType"",
+                        ""symbols"":[""DEFAULT"", ""FIRST"", ""SECOND"", ""THIRD""]
+                     },
+                     ""aliases"": [""oldEnumType""]
+                  }
+               ]
+            }");
+
+            var testRecord = new EnumRecord {enumType = EnumType.SECOND};
+
+            var stream = serialize(writerSchema, testRecord);
+
+            var deserializedRecord = deserialize<EnumRecord>(stream, writerSchema, readerSchema);
+            Assert.AreEqual(EnumType.SECOND, deserializedRecord.enumType);
+        }
 
         [Test]
         public void TestArrayWithReservedWords()
@@ -439,6 +490,7 @@ namespace Avro.Test
             Assert.AreEqual("6", dstRecord.UserMatrix[1][0][1].name);
             Assert.AreEqual(0, dstRecord.UserMatrix[2].Count);
         }
+
 
         private static S deserialize<S>(Stream ms, Schema ws, Schema rs) where S : class, ISpecificRecord
         {
@@ -628,5 +680,19 @@ namespace Avro.Test
         {
             enumType = (EnumType)fieldValue;
         }
+    }
+
+    class EmptyEnumRecord : ISpecificRecord
+    {
+        public Schema Schema { get; } = Schema.Parse(@"{
+            ""type"":""record"",
+            ""name"":""EnumRecord"",
+            ""namespace"":""Avro.Test"",
+            ""fields"":[]
+        }");
+
+        public object Get(int fieldPos) => throw new ArgumentOutOfRangeException();
+
+        public void Put(int fieldPos, object fieldValue) => throw new ArgumentOutOfRangeException();
     }
 }
