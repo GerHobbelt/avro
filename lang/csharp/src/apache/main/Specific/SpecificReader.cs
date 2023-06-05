@@ -111,15 +111,17 @@ namespace Avro.Specific
 
             ISpecificRecord rec = (reuse != null ? reuse : ObjectCreator.Instance.New(rs.Fullname, Schema.Type.Record)) as ISpecificRecord;
             object obj;
+            var unmatchedReaderFields = rs.Fields.ToDictionary(rf => rf.Name, rf => rf);
             foreach (Field wf in writerSchema)
             {
                 try
                 {
                     Field rf;
-                    if (rs.TryGetField(wf.Name, out rf))
+                    if (rs.TryGetFieldAlias(wf.Name, out rf))
                     {
                         obj = rec.Get(rf.Pos);
                         rec.Put(rf.Pos, Read(obj, wf.Schema, rf.Schema, dec));
+                        unmatchedReaderFields.Remove(rf.Name);
                     }
                     else
                         Skip(wf.Schema, dec);
@@ -133,10 +135,8 @@ namespace Avro.Specific
             var defaultStream = new MemoryStream();
             var defaultEncoder = new BinaryEncoder(defaultStream);
             var defaultDecoder = new BinaryDecoder(defaultStream);
-            foreach (Field rf in rs)
+            foreach (Field rf in unmatchedReaderFields.Values)
             {
-                if (writerSchema.Contains(rf.Name)) continue;
-
                 defaultStream.Position = 0; // reset for writing
                 Resolver.EncodeDefaultValue(defaultEncoder, rf.Schema, rf.DefaultValue);
                 defaultStream.Flush();
