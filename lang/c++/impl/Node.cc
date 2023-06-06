@@ -17,6 +17,7 @@
  */
 
 #include <cmath>
+#include <unordered_set>
 
 #include "Node.hh"
 
@@ -25,6 +26,11 @@ namespace avro {
 using std::string;
 
 Node::~Node() = default;
+
+struct Name::Aliases {
+    std::vector<std::string> raw;
+    std::unordered_set<std::string> fullyQualified;
+};
 
 Name::Name() = default;
 
@@ -35,6 +41,25 @@ Name::Name(const std::string &name) {
 Name::Name(std::string simpleName, std::string ns) : ns_(std::move(ns)), simpleName_(std::move(simpleName)) {
     check();
 }
+
+Name::Name(const Name& other) {
+    *this = other;
+}
+
+Name& Name::operator=(const Name& other) {
+    if (this != &other) {
+        ns_ = other.ns_;
+        simpleName_ = other.simpleName_;
+        if (other.aliases_) {
+            aliases_ = std::make_unique<Aliases>(*other.aliases_);
+        }
+    }
+    return *this;
+}
+
+Name::Name(Name&& other) = default;
+
+Name& Name::operator=(Name&& other) = default;
 
 Name::~Name() = default;
 
@@ -54,12 +79,20 @@ void Name::fullname(const string &name) {
     check();
 }
 
+const std::vector<std::string>& Name::aliases() const {
+    static const std::vector<std::string> emptyAliases;
+    return aliases_ ? aliases_->raw : emptyAliases;
+}
+
 void Name::addAlias(const std::string &alias) {
-    aliases_.push_back(alias);
+    if (!aliases_) {
+        aliases_ = std::make_unique<Aliases>();
+    }
+    aliases_->raw.push_back(alias);
     if (!ns_.empty() && alias.find_last_of('.') == string::npos) {
-        fqAliases_.emplace(ns_ + "." + alias);
+        aliases_->fullyQualified.emplace(ns_ + "." + alias);
     } else {
-        fqAliases_.insert(alias);
+        aliases_->fullyQualified.insert(alias);
     }
 }
 
@@ -90,7 +123,13 @@ bool Name::operator==(const Name &n) const {
 }
 
 bool Name::equalOrAliasedBy(const Name &n) const {
-    return *this == n || n.fqAliases_.find(fullname()) != n.fqAliases_.end();
+    return *this == n || (n.aliases_ && n.aliases_->fullyQualified.find(fullname()) != n.aliases_->fullyQualified.end());
+}
+
+void Name::clear() {
+    ns_.clear();
+    simpleName_.clear();
+    aliases_.reset();
 }
 
 void Node::setLogicalType(LogicalType logicalType) {
