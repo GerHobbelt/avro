@@ -83,7 +83,7 @@ case "$target" in
     ;;
 
   test)
-    (cd build && cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug -D AVRO_ADD_PROTECTOR_FLAGS=1 .. && make && cd .. \
+    (cd build && cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug -D CMAKE_CXX_STANDARD=14 -D AVRO_ADD_PROTECTOR_FLAGS=1 .. && make -j 6 && cd .. \
       && ./build/buffertest \
       && ./build/unittest \
       && ./build/CodecTests \
@@ -123,7 +123,7 @@ case "$target" in
     ;;
 
   install)
-    (cd build && cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release .. && make install)
+    (cd build && cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_STANDARD=14 .. && make -j 6 install)
     ;;
 
   *)

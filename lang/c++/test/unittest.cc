@@ -414,7 +414,6 @@ struct TestSchema {
 };
 
 struct TestEncoding {
-
     static void compare(int32_t val) {
         uint32_t encoded = encodeZigzag32(val);
         BOOST_CHECK_EQUAL(decodeZigzag32(encoded), val);

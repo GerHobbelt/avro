@@ -279,30 +279,25 @@ protected:
 };
 
 class AVRO_DECL NodeRecord : public NodeImplRecord {
-    std::vector<GenericDatum> defaultValues;
+    std::vector<std::vector<std::string>> fieldsAliases_;
+    std::vector<GenericDatum> fieldsDefaultValues_;
 
 public:
     NodeRecord() : NodeImplRecord(AVRO_RECORD) {}
+
     NodeRecord(const HasName &name, const MultiLeaves &fields,
-               const LeafNames &fieldsNames,
-               std::vector<GenericDatum> dv);
+               const LeafNames &fieldsNames, std::vector<std::vector<std::string>> fieldsAliases,
+               std::vector<GenericDatum> fieldsDefaultValues)
+        : NodeRecord(name, HasDoc(), fields, fieldsNames, std::move(fieldsAliases), std::move(fieldsDefaultValues)) {}
 
     NodeRecord(const HasName &name, const HasDoc &doc, const MultiLeaves &fields,
-               const LeafNames &fieldsNames,
-               std::vector<GenericDatum> dv) : NodeImplRecord(AVRO_RECORD, name, doc, fields, fieldsNames, NoSize()),
-                                               defaultValues(std::move(dv)) {
-        for (size_t i = 0; i < leafNameAttributes_.size(); ++i) {
-            if (!nameIndex_.add(leafNameAttributes_.get(i), i)) {
-                throw Exception(boost::format(
-                                    "Cannot add duplicate field: %1%")
-                                % leafNameAttributes_.get(i));
-            }
-        }
-    }
+               const LeafNames &fieldsNames, std::vector<std::vector<std::string>> fieldsAliases,
+               std::vector<GenericDatum> fieldsDefaultValues);
 
     void swap(NodeRecord &r) {
         NodeImplRecord::swap(r);
-        defaultValues.swap(r.defaultValues);
+        fieldsAliases_.swap(r.fieldsAliases_);
+        fieldsDefaultValues_.swap(r.fieldsDefaultValues_);
     }
 
     SchemaResolution resolve(const Node &reader) const override;
@@ -314,7 +309,7 @@ public:
     }
 
     const GenericDatum &defaultValueAt(size_t index) override {
-        return defaultValues[index];
+        return fieldsDefaultValues_[index];
     }
 
     void printDefaultToJson(const GenericDatum &g, std::ostream &os, size_t depth) const override;
