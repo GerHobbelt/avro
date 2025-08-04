@@ -33,6 +33,15 @@
 #error "Use this header only with Microsoft Visual C++ compilers!"
 #endif // _MSC_VER ]
 
+// fix a metric ton of errors like these:
+// error C2371: 'int_fast16_t': redefinition; different basic types 
+
+#if _MSC_VER >= 1900
+
+#include <inttypes.h>
+
+#else
+
 #ifndef _MSC_INTTYPES_H_ // [
 #define _MSC_INTTYPES_H_
 
@@ -313,3 +322,5 @@ imaxdiv_t __cdecl imaxdiv(intmax_t numer, intmax_t denom)
 
 
 #endif // _MSC_INTTYPES_H_ ]
+
+#endif // _MSC_VER check
