@@ -22,6 +22,7 @@ on:
     branches: [ main ]
     paths:
     - .github/workflows/test-lang-php.yml
+    - composer.json
     - lang/php/**
 
 defaults:
@@ -41,9 +42,10 @@ jobs:
           - ubuntu-latest
           - ubuntu-24.04-arm
         php:
-          - '7.3'
-          - '7.4'
-          - '8.0'
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
 
     steps:
       - uses: actions/checkout@v5
@@ -52,7 +54,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          tools: composer:2.2.5
+          tools: composer:2.8.12
 
       - name: Get Composer Cache Directory
         id: composer-cache
@@ -66,7 +68,11 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Lint
+        if: matrix.php == '8.1'
         run: ./build.sh lint
+
+      - name: Static analysis
+        run: ./build.sh phpstan
 
       - name: Test
         run: ./build.sh test
@@ -79,9 +85,10 @@ jobs:
           - ubuntu-latest
           - ubuntu-24.04-arm
         php:
-          - '7.3'
-          - '7.4'
-          - '8.0'
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
 
     steps:
       - uses: actions/checkout@v5
@@ -90,7 +97,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          tools: composer:2.2.5
+          tools: composer:2.8.12
 
       - name: Cache Local Maven Repository
         uses: actions/cache@v4
@@ -110,10 +117,10 @@ jobs:
             17
             21
 
-      - name: 'Setup Maven 3.9.6'
+      - name: 'Setup Maven 3.9.11'
         uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
         with:
-          maven-version: 3.9.6
+          maven-version: 3.9.11
 
       - name: Install Java Avro for Interop Test
         working-directory: .
