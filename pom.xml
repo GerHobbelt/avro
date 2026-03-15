@@ -49,7 +49,7 @@
     <!-- plugin versions -->
     <apache-rat-plugin.version>0.17</apache-rat-plugin.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <checkstyle.version>13.2.0</checkstyle.version>
+    <checkstyle.version>13.3.0</checkstyle.version>
     <enforcer-plugin.version>3.6.2</enforcer-plugin.version>
     <extra-enforcer-rules.version>1.11.0</extra-enforcer-rules.version>
     <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
@@ -63,7 +63,7 @@
     <maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
     <plugin-tools-javadoc.version>3.5.2</plugin-tools-javadoc.version>
     <spotless-maven-plugin.version>3.2.1</spotless-maven-plugin.version>
-    <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+    <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
 
     <!-- Pin output timestamp to make the Java build reproducible -->
     <project.build.outputTimestamp>1723122283</project.build.outputTimestamp>
@@ -518,7 +518,7 @@
                 <exclude>lang/perl/inc/Module/Install/*.pm</exclude>
                 <exclude>lang/py/.eggs/**</exclude>
                 <exclude>lang/py/.mypy_cache/**</exclude>
-                <exclude>lang/py/.tox/**</exclude>
+                <exclude>lang/py/uv.lock</exclude>
                 <exclude>lang/py/build/**</exclude>
                 <exclude>lang/py/dist/**</exclude>
                 <exclude>lang/py/userlogs/**</exclude>
